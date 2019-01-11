@@ -55,13 +55,13 @@ const app = setupWebServer(function(line) {
 	}
 
 	if (
-		(buffer.getMessagesCount() > config.batchSize ||
+		(buffer.getMessagesCount() >= config.batchSize ||
 			(Date.now() - lastPushedTime > MAX_TIME_BETWEEN_PUSHES &&
 				buffer.getMessagesCount() > 0)) &&
 		!pusher.isLocked()
 	) {
 		console.log(`Pushing ${buffer.getMessagesCount()} messages...`);
-				
+
 		pusher.push(buffer.messages);
 		buffer.clearMessages();
 		lastPushedTime = Date.now();
