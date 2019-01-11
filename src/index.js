@@ -60,6 +60,8 @@ const app = setupWebServer(function(line) {
 				buffer.getMessagesCount() > 0)) &&
 		!pusher.isLocked()
 	) {
+		console.log(`Pushing ${buffer.getMessagesCount()} messages...`);
+				
 		pusher.push(buffer.messages);
 		buffer.clearMessages();
 		lastPushedTime = Date.now();
