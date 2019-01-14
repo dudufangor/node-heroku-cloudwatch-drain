@@ -20,8 +20,6 @@ try {
 	return process.exit(1);
 }
 
-const MAX_TIME_BETWEEN_PUSHES = 2000;
-
 const AWS = require("aws-sdk");
 AWS.config.update({ region: config.awsCredentials.region });
 const cloudWatchLogsInstance = new AWS.CloudWatchLogs();
@@ -45,12 +43,7 @@ const app = setupWebServer(function(line) {
 
 	let batch = buffer.getMessagesBatch();
 
-	if (
-		(buffer.isBatchReady() ||
-			(Date.now() - lastPushedTime > MAX_TIME_BETWEEN_PUSHES &&
-				buffer.getMessagesCount() > 0)) &&
-		!pusher.isLocked()
-	) {
+	if (buffer.isBatchReady() && !pusher.isLocked()) {
 		console.log(`Pushing ${buffer.messagesBatch.length} messages...`);
 
 		pusher.push(batch);
