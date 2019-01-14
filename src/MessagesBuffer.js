@@ -85,8 +85,6 @@ class MessagesBuffer {
         timestamp: Date.now(),
         message: log.trim(),
       });
-    } else {
-      console.log(`Invalid log message! ${log}`);
     }
   }
 }
