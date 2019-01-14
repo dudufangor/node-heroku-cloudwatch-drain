@@ -51,7 +51,7 @@ const app = setupWebServer(function(line) {
 				buffer.getMessagesCount() > 0)) &&
 		!pusher.isLocked()
 	) {
-		console.log(`Pushing ${buffer.messagesBatch.length()} messages...`);
+		console.log(`Pushing ${buffer.messagesBatch.length} messages...`);
 
 		pusher.push(batch);
 		buffer.clearMessagesBatch();
