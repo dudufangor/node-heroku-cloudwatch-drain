@@ -35,7 +35,7 @@ const MessagesBuffer = require("./MessagesBuffer");
 const CloudWatchPusher = require("./CloudWatchPusher");
 const parseMetrics = require("./parseMetrics");
 
-const buffer = new MessagesBuffer(config.filters);
+const buffer = new MessagesBuffer(config.filters, config.batchSize);
 const pusher = new CloudWatchPusher(cloudWatchLogsInstance, config.logGroup, LOG_STREAM);
 
 let lastPushedTime = 0;
@@ -43,27 +43,18 @@ let lastPushedTime = 0;
 const app = setupWebServer(function(line) {
 	buffer.addLog(line);
 
-	if (line.indexOf("sample#memory") !== -1) {
-		parseMetrics
-		.parseMemoryMetrics(line, cloudWatchInstance)
-		.catch(() => {});
-	}
-
-	if (line.indexOf("sample#load") !== -1) {
-		parseMetrics.parseLoadMetrics(line, cloudWatchInstance)
-		.catch(() => {});
-	}
+	let batch = buffer.getMessagesBatch();
 
 	if (
-		(buffer.getMessagesCount() >= config.batchSize ||
+		(buffer.isBatchReady() ||
 			(Date.now() - lastPushedTime > MAX_TIME_BETWEEN_PUSHES &&
 				buffer.getMessagesCount() > 0)) &&
 		!pusher.isLocked()
 	) {
-		console.log(`Pushing ${buffer.getMessagesCount()} messages...`);
+		console.log(`Pushing ${buffer.messagesBatch.length()} messages...`);
 
-		pusher.push(buffer.messages);
-		buffer.clearMessages();
+		pusher.push(batch);
+		buffer.clearMessagesBatch();
 		lastPushedTime = Date.now();
 	}
 });

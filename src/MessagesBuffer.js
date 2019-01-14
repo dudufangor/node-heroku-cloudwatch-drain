@@ -1,39 +1,94 @@
 function isValid(log, filters) {
-	if (!log || !log.trim()) {
-		return false;
-	}
+  if (!log || !log.trim()) {
+    return false;
+  }
 
-	for (let i = 0; i < filters.length; i++) {
-		if (filters[i].test(log)) {
-			return false;
-		}
-	}
+  for (let i = 0; i < filters.length; i++) {
+    if (filters[i].test(log)) {
+      return false;
+    }
+  }
 
-	return true;
+  return true;
 }
 
 class MessagesBuffer {
-	constructor(filters) {
-		this.messages = [];
-		this.filters = filters || [];
-	}
+  constructor(filters, batchSize) {
+    this.messages = [];
+    this.filters = filters || [];
+    this.batchSize = batchSize;
+    this.messagesBatch = [];
+  }
 
-	getMessagesCount() {
-		return this.messages.length;
-	}
+  queueAge() {
+    try {
+      return Date.now() - this.messages[this.getMessagesCount() - 1].timestamp;
+    } catch(e) {
+      return 0;
+    }
+  }
 
-	clearMessages() {
-		this.messages = [];
-	}
+  getMessagesCount() {
+    return this.messages.length;
+  }
 
-	addLog(log) {
-		if (isValid(log, this.filters)) {
-			this.messages.push({
-				timestamp: Date.now(),
-				message: log.trim(),
-			});
-		}
-	}
+  clearMessages() {
+    this.messages = [];
+  }
+
+  clearMessagesBatch() {
+    this.messagesBatch = [];
+  }
+
+  isBatchReady() {
+    if (this.messagesBatch.length >= this.batchSize) {
+      return true;
+    }
+
+    if (this.messagesBatch.length >= 1 && this.messages.length < 1) {
+      return true;
+    }
+
+    return false;
+  }
+
+  shouldFillBatch() {
+    if (this.getMessagesCount() >= this.batchSize && !this.isBatchReady()) {
+      return true;
+    };
+
+
+    if (!this.isBatchReady() && this.queueAge() >= 2000) {
+      return true;
+    }
+
+    return false;
+  }
+
+  getMessagesBatch() {
+    if (!this.isBatchReady()) {
+      this.fillInBatch();
+    }
+
+    return this.messagesBatch;
+  }
+
+  fillInBatch() {
+    if (this.shouldFillBatch()) {
+      this.messagesBatch = this.messages.splice(0, this.batchSize);
+    };
+  }
+
+  addLog(log) {
+    if (isValid(log, this.filters)) {
+      this.messages.push({
+        timestamp: Date.now(),
+        message: log.trim(),
+      });
+    } else {
+      console.log(`Invalid log message! ${log}`);
+    }
+  }
 }
 
 module.exports = MessagesBuffer;
