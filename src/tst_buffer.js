@@ -3,6 +3,7 @@ require('log-timestamp');
 const MessagesBuffer = require("./MessagesBuffer");
 
 var testBuffer = async () => {
+  let pms = 0;
   function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
@@ -25,7 +26,9 @@ var testBuffer = async () => {
     let batch = buffer.getMessagesBatch();
 
     if (buffer.isBatchReady()) {
-      console.log(`${batch[0].message} --- ${batch[batch.length - 1].message}`);
+      console.log(`${pms}`)
+      // console.log(`${batch[0].message} --- ${batch[batch.length - 1].message}`);
+      pms += buffer.messagesBatch.length;
       buffer.clearMessagesBatch();
     }
   } while (buffer.getMessagesCount() > 1);

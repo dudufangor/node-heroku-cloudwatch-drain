@@ -39,6 +39,7 @@ const buffer = new MessagesBuffer(config.filters, config.batchSize);
 const pusher = new CloudWatchPusher(cloudWatchLogsInstance, config.logGroup, LOG_STREAM);
 
 let lastPushedTime = 0;
+let lastPushedMessages = 0;
 let pushedMessages = 0;
 let lastOutput = 0;
 
@@ -49,15 +50,21 @@ const app = setupWebServer(function(line) {
 
 	if (buffer.isBatchReady() && !pusher.isLocked()) {
 		if ((Date.now() - lastOutput) >= 60000) {
-			console.log(`${pushedMessages} pushed to CloudWatch.`)
+			lastPushedMessages = pushedMessages;
+
+			console.log(`${pushedMessages} pushed to CloudWatch | ${buffer.messages} messages enqueued`);
+			console.log(`Throughtput is ${pushedMessages-lastPushedMessages} messages per minute.`);
+
 			lastOutput = Date.now();
 		}
 
 		pusher.push(batch);
-		buffer.clearMessagesBatch();
-		lastPushedTime = Date.now();
 
 		pushedMessages += buffer.messagesBatch.length
+
+		buffer.clearMessagesBatch();
+
+		lastPushedTime = Date.now();
 	}
 });
 
