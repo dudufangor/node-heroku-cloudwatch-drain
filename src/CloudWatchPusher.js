@@ -1,5 +1,7 @@
 "use strict";
 
+require('log-timestamp');
+
 class CloudWatchPusher {
 	constructor(cloudWatchInstance, group, stream) {
 		this.cloudWatchInstance = cloudWatchInstance;
@@ -27,6 +29,10 @@ class CloudWatchPusher {
 		return this.cloudWatchInstance.putLogEvents(params).promise().then(data => {
 			this.lastPushCompleted = true;
 			this.sequenceToken = data.nextSequenceToken;
+		}, error => {
+			console.log('Error pushing to CloudWatch...');
+			console.log(error);
+			this.lastPushCompleted = true;
 		});
 	}
 }

@@ -1,3 +1,5 @@
+require('log-timestamp');
+
 const MEMORY_REGEX = /source=(\w+[.]\d+) dyno=([^ ]+) sample#memory_total=([^ ]+)MB sample#memory_rss=([^ ]+)MB sample#memory_cache=([^ ]+)MB sample#memory_swap=([^ ]+)MB sample#memory_pgpgin=([^ ]+)pages sample#memory_pgpgout=([^ ]+)pages sample#memory_quota=([^ ]+)MB/;
 const METRIC_REGEX = /source=(\w+[.]\d+) dyno=([^ ]+) sample#load_avg_1m=([^ ]+) sample#load_avg_5m=([^ ]+) sample#load_avg_15m=([^ ]+)/;
 

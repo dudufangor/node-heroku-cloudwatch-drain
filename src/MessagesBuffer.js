@@ -1,3 +1,5 @@
+require('log-timestamp');
+
 function isValid(log, filters) {
   if (!log || !log.trim()) {
     return false;

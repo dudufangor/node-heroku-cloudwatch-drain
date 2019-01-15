@@ -1,3 +1,5 @@
+require('log-timestamp');
+
 const MessagesBuffer = require("./MessagesBuffer");
 
 var testBuffer = async () => {

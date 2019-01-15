@@ -1,5 +1,7 @@
 "use strict";
 
+require('log-timestamp');
+
 function getLogGroup(cloudwatchlogs, name) {
 	return cloudwatchlogs
 		.describeLogGroups({

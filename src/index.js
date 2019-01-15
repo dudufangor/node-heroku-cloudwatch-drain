@@ -4,6 +4,8 @@ const path = require("path");
 
 const fileFromArgument = process.argv[2];
 
+require('log-timestamp');
+
 if (!fileFromArgument) {
 	console.error(
 		"Please specify config file: \n Example: $ node-heroku-cloudwatch-drain config.js"
@@ -37,6 +39,8 @@ const buffer = new MessagesBuffer(config.filters, config.batchSize);
 const pusher = new CloudWatchPusher(cloudWatchLogsInstance, config.logGroup, LOG_STREAM);
 
 let lastPushedTime = 0;
+let pushedMessages = 0;
+let lastOutput = 0;
 
 const app = setupWebServer(function(line) {
 	buffer.addLog(line);
@@ -44,11 +48,16 @@ const app = setupWebServer(function(line) {
 	let batch = buffer.getMessagesBatch();
 
 	if (buffer.isBatchReady() && !pusher.isLocked()) {
-		console.log(`Pushing ${buffer.messagesBatch.length} messages...`);
+		if ((Date.now() - lastOutput) >= 60000) {
+			console.log(`${pushedMessages} pushed to CloudWatch.`)
+			lastPushedTime = Date.now();
+		}
 
 		pusher.push(batch);
 		buffer.clearMessagesBatch();
 		lastPushedTime = Date.now();
+
+		pushedMessages += buffer.messagesBatch.length
 	}
 });
 
