@@ -50,7 +50,7 @@ const app = setupWebServer(function(line) {
 	if (buffer.isBatchReady() && !pusher.isLocked()) {
 		if ((Date.now() - lastOutput) >= 60000) {
 			console.log(`${pushedMessages} pushed to CloudWatch.`)
-			lastPushedTime = Date.now();
+			lastOutput = Date.now();
 		}
 
 		pusher.push(batch);
