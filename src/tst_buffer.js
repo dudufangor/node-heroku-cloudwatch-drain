@@ -1,6 +1,8 @@
 require('log-timestamp');
 
 const MessagesBuffer = require("./MessagesBuffer");
+const CloudWatchPusher = require("./CloudWatchPusher");
+
 
 var testBuffer = async () => {
   let pms = 0;
@@ -13,10 +15,11 @@ var testBuffer = async () => {
   }
 
   let start = new Date().getTime();
-  let buffer = new MessagesBuffer([], 10);
+  let buffer = new MessagesBuffer([], 113);
+  const pusher = new CloudWatchPusher('penis', 'fff', 'vruum');
 
   var i;
-  for (i = 0; i <= 54; i++) {
+  for (i = 0; i <= 1000; i++) {
     buffer.addLog(`logline n ${i}`);
   }
 
@@ -25,10 +28,9 @@ var testBuffer = async () => {
   do {
     let batch = buffer.getMessagesBatch();
 
-    if (buffer.isBatchReady()) {
-      console.log(`${pms}`)
-      // console.log(`${batch[0].message} --- ${batch[batch.length - 1].message}`);
-      pms += buffer.messagesBatch.length;
+    if (buffer.isBatchReady() && !pusher.isLocked()) {
+      // await sleep(200)
+      await pusher.push(batch);
       buffer.clearMessagesBatch();
     }
   } while (buffer.getMessagesCount() > 1);
