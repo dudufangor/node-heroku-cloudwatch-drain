@@ -15,7 +15,7 @@ class CloudWatchPusher {
     return !this.lastPushCompleted;
   }
 
-  tricklePush async (messages) {
+  async tricklePush (messages) {
     do {
       let batch = messages.splice(0, 50)
       console.log(`Sub-batch pushing... ${batch.length} messages`)
