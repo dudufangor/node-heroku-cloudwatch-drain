@@ -15,15 +15,17 @@ class CloudWatchPusher {
     return !this.lastPushCompleted;
   }
 
-  tricklePush (messages) {
+  tricklePush async (messages) {
     do {
       let batch = messages.splice(0, 50)
       console.log(`Sub-batch pushing... ${batch.length} messages`)
-      this.push(batch);
+      await this.push(batch, true);
     } while (messages.length >= 1);
+
+    this.lastPushCompleted = true;
   }
 
-  push(messages) {
+  push(messages, subBatch) {
     const params = {
       logEvents: messages.concat([]),
       logGroupName: this.group,
@@ -34,7 +36,10 @@ class CloudWatchPusher {
     this.lastPushCompleted = false;
 
     return this.cloudWatchInstance.putLogEvents(params).promise().then(data => {
-      this.lastPushCompleted = true;
+      if (!subBatch) {
+        this.lastPushCompleted = true;
+      }
+
       this.sequenceToken = data.nextSequenceToken;
     }, error => {
       console.log('Error pushing to CloudWatch...');
