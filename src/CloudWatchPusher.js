@@ -17,7 +17,7 @@ class CloudWatchPusher {
 
   async tricklePush (messages) {
     do {
-      let batch = messages.splice(0, 50)
+      let batch = messages.splice(0, 150)
       console.log(`Sub-batch pushing... ${batch.length} messages`)
       await this.push(batch, true);
     } while (messages.length >= 1);
@@ -43,9 +43,13 @@ class CloudWatchPusher {
       this.sequenceToken = data.nextSequenceToken;
     }, error => {
       console.log('Error pushing to CloudWatch...');
+
       console.log(error);
-      console.log('Will divide the current batch in smaller ones!');
-      this.tricklePush(messages);
+
+      if (e.name == 'InvalidParameterException') {
+        console.log('Will divide the current batch in smaller ones!');
+        this.tricklePush(messages);
+      };
     });
   }
 }
