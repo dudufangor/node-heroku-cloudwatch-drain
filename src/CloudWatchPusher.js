@@ -46,7 +46,7 @@ class CloudWatchPusher {
 
       console.log(error);
 
-      if (error.code == 'InvalidParameterException') {
+      if (error.code == 'InvalidParameterException' || error.statusCode == 413) {
         console.log('Will divide the current batch in smaller ones!');
         this.tricklePush(messages);
       } else {
