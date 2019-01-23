@@ -49,6 +49,9 @@ class CloudWatchPusher {
       if (error.code == 'InvalidParameterException' || error.statusCode == 413) {
         console.log('Will divide the current batch in smaller ones!');
         this.tricklePush(messages);
+      } else if (error.code == 'InvalidSequenceTokenException') {
+        this.sequenceToken = error.message.match(/(?:sequenceToken\sis:\s)(.+$)/)[1];
+        this.push(messages);
       } else {
         this.push(messages);
       };
