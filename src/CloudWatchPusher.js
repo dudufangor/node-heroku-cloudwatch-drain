@@ -42,7 +42,7 @@ class CloudWatchPusher {
 
       this.sequenceToken = data.nextSequenceToken;
     }, error => {
-      console.log('Error pushing to CloudWatch...');
+      console.log(`Error pushing to CloudWatch... Sub-batch?: ${!!subBatch}`);
 
       console.log(error);
 
