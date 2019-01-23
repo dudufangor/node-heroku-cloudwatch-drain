@@ -51,9 +51,9 @@ class CloudWatchPusher {
         this.tricklePush(messages);
       } else if (error.code == 'InvalidSequenceTokenException') {
         this.sequenceToken = error.message.match(/(?:sequenceToken\sis:\s)(.+$)/)[1];
-        this.push(messages);
+        this.push(messages, subBatch);
       } else {
-        this.push(messages);
+        this.push(messages, subBatch);
       };
     });
   }
