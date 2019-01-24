@@ -25,7 +25,9 @@ class CloudWatchPusher {
     this.lastPushCompleted = true;
   }
 
-  push(messages, subBatch) {
+  async push(messages, subBatch) {
+    this.lastPushCompleted = false;
+
     const params = {
       logEvents: messages.concat([]),
       logGroupName: this.group,
@@ -33,15 +35,13 @@ class CloudWatchPusher {
       sequenceToken: this.sequenceToken,
     };
 
-    this.lastPushCompleted = false;
-
     return this.cloudWatchInstance.putLogEvents(params).promise().then(data => {
+      this.sequenceToken = data.nextSequenceToken;
+
       if (!subBatch) {
         this.lastPushCompleted = true;
       }
-
-      this.sequenceToken = data.nextSequenceToken;
-    }, error => {
+    }, async error => {
       console.log(`Error pushing to CloudWatch... Sub-batch?: ${!!subBatch}`);
 
       console.log(error);
@@ -50,11 +50,12 @@ class CloudWatchPusher {
         console.log('Will divide the current batch in smaller ones!');
         this.tricklePush(messages);
       } else if (error.code == 'InvalidSequenceTokenException') {
+        console.log(`Token tried: ${this.sequenceToken}`)
         this.sequenceToken = error.message.match(/(?:sequenceToken\sis:\s)(.+$)/)[1];
         console.log(`Setting new token... ${this.sequenceToken}`)
-        this.push(messages, subBatch);
+        await this.push(messages, subBatch);
       } else {
-        this.push(messages, subBatch);
+        await this.push(messages, subBatch);
       };
     });
   }

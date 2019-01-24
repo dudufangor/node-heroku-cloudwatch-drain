@@ -58,6 +58,7 @@ const app = setupWebServer(function(line) {
 			lastOutput = Date.now();
 		}
 
+		pusher.lastPushCompleted = false;
 		pusher.push(batch);
 
 		pushedMessages += buffer.messagesBatch.length
