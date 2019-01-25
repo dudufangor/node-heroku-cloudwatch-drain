@@ -37,3 +37,5 @@ var testBuffer = async () => {
 }
 
 testBuffer();
+
+// cat forever.log | grep -m 2 -C 30 'Error pushing to CloudWatch'

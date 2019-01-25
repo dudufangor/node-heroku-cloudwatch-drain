@@ -51,7 +51,7 @@ const app = setupWebServer(function(line) {
 	if (buffer.isBatchReady() && !pusher.isLocked()) {
 		if ((Date.now() - lastOutput) >= 1000) {
 			console.log(`${pushedMessages} pushed to CloudWatch | ${buffer.messages.length} messages enqueued`);
-			console.log(`Throughtput is ${pushedMessages-lastPushedMessages} messages per minute.`);
+			console.log(`Throughtput is ${pushedMessages-lastPushedMessages} messages per second.`);
 
 			lastPushedMessages = pushedMessages;
 

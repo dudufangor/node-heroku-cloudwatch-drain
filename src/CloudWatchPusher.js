@@ -50,11 +50,14 @@ class CloudWatchPusher {
         console.log('Will divide the current batch in smaller ones!');
         this.tricklePush(messages);
       } else if (error.code == 'InvalidSequenceTokenException') {
-        console.log(`Token tried: ${this.sequenceToken}`)
+        console.log(`Token tried: ${this.sequenceToken}`);
         this.sequenceToken = error.message.match(/(?:sequenceToken\sis:\s)(.+$)/)[1];
-        console.log(`Setting new token... ${this.sequenceToken}`)
+        console.log(`Setting new token... ${this.sequenceToken}`);
         await this.push(messages, subBatch);
       } else {
+        console.log(`Token tried: ${this.sequenceToken}`);
+        this.sequenceToken = error.message.match(/(?:sequenceToken\sis:\s)(.+$)/)[1];
+        console.log(`Setting new token... ${this.sequenceToken}`);
         await this.push(messages, subBatch);
       };
     });
