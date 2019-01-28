@@ -30,7 +30,7 @@ class CloudWatchPusher {
     do {
       let batch = messages.splice(0, 150)
       console.log(`Sub-batch pushing... ${batch.length} messages`)
-      debugBuffer.addLog(`Sub-batch pushing... ${batch.length} messages`);
+      this.debugBuffer.addLog(`Sub-batch pushing... ${batch.length} messages`);
       await this.push(batch, true);
     } while (messages.length >= 1);
 
@@ -38,9 +38,9 @@ class CloudWatchPusher {
   }
 
   debugPush() {
-    let batch = debugBuffer.getMessagesBatch();
+    let batch = this.debugBuffer.getMessagesBatch();
 
-    if (debugBuffer.isBatchReady() && !debugBuffer.debugIsLocked()) {
+    if (this.debugBuffer.isBatchReady() && !this.debugBuffer.debugIsLocked()) {
       this.lastDebugPushCompleted = false;
 
       const params = {
@@ -81,16 +81,16 @@ class CloudWatchPusher {
     }, async error => {
       console.log(`Error pushing to CloudWatch... Sub-batch?: ${!!subBatch}`);
 
-      debugBuffer.addLog(`Error pushing to CloudWatch... Sub-batch?: ${!!subBatch}`);
+      this.debugBuffer.addLog(`Error pushing to CloudWatch... Sub-batch?: ${!!subBatch}`);
 
       console.log(error);
 
-      debugBuffer.addLog(JSON.stringify(error));
+      this.debugBuffer.addLog(JSON.stringify(error));
 
       if (error.code == 'InvalidParameterException' || error.statusCode == 413) {
         console.log('Will divide the current batch in smaller ones!');
 
-        debugBuffer.addLog('Will divide the current batch in smaller ones!');
+        this.debugBuffer.addLog('Will divide the current batch in smaller ones!');
 
         this.tricklePush(messages);
 
@@ -98,12 +98,12 @@ class CloudWatchPusher {
       } else {
         console.log(`Token tried: ${this.sequenceToken}`);
 
-        debugBuffer.addLog(`Token tried: ${this.sequenceToken}`);
+        this.debugBuffer.addLog(`Token tried: ${this.sequenceToken}`);
 
         console.log('Will try again...')
 
 
-        debugBuffer.addLog('Will try again...');
+        this.debugBuffer.addLog('Will try again...');
 
         this.debugPush();
 
