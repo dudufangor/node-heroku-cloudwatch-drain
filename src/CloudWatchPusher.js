@@ -40,7 +40,11 @@ class CloudWatchPusher {
   debugPush() {
     let batch = this.debugBuffer.getMessagesBatch();
 
-    if (this.debugBuffer.isBatchReady() && !this.debugBuffer.debugIsLocked()) {
+    console.log(`this.debugBuffer.isBatchReady() ${this.debugBuffer.isBatchReady()}`);
+    console.log(`this.debugIsLocked() ${this.debugIsLocked()}`);
+    console.log(`batch ${batch.length}`);
+
+    if (this.debugBuffer.isBatchReady() && !this.debugIsLocked()) {
       this.lastDebugPushCompleted = false;
 
       const params = {
