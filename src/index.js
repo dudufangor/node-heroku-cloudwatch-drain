@@ -29,14 +29,18 @@ const cloudWatchInstance = new AWS.CloudWatch();
 
 const LOG_STREAM = config.logStreamPrefix + Math.random().toString().substr(2);
 
+const DEBUG_LOG_STREAM_NAME = 'debug' + Math.random().toString().substr(2);
+const DEBUG_LOG_GROUP_NAME = 'Drain'
+
 const setupWebServer = require("./setupExpress")(config.accessToken);
 const setupCloudWatch = require("./setupCloudWatch");
 const MessagesBuffer = require("./MessagesBuffer");
 const CloudWatchPusher = require("./CloudWatchPusher");
 const parseMetrics = require("./parseMetrics");
 
+const debugBuffer = new MessagesBuffer([], 50);
 const buffer = new MessagesBuffer(config.filters, config.batchSize);
-const pusher = new CloudWatchPusher(cloudWatchLogsInstance, config.logGroup, LOG_STREAM);
+const pusher = new CloudWatchPusher(cloudWatchLogsInstance, config.logGroup, LOG_STREAM, {streamName: DEBUG_LOG_STREAM_NAME, groupName: DEBUG_LOG_GROUP_NAME, buffer: debugBuffer});
 
 let lastPushedTime = 0;
 let lastPushedMessages = 0;
@@ -52,6 +56,9 @@ const app = setupWebServer(function(line) {
 		if ((Date.now() - lastOutput) >= 1000) {
 			console.log(`${pushedMessages} pushed to CloudWatch | ${buffer.messages.length} messages enqueued`);
 			console.log(`Throughtput is ${pushedMessages-lastPushedMessages} messages per second.`);
+
+			debugBuffer.addLog(`${pushedMessages} pushed to CloudWatch | ${buffer.messages.length} messages enqueued`);
+			debugBuffer.addLog(`Throughtput is ${pushedMessages-lastPushedMessages} messages per second.`);
 
 			lastPushedMessages = pushedMessages;
 
@@ -69,7 +76,7 @@ const app = setupWebServer(function(line) {
 	}
 });
 
-setupCloudWatch(cloudWatchLogsInstance, config.logGroup, LOG_STREAM)
+setupCloudWatch(cloudWatchLogsInstance, config.logGroup, LOG_STREAM, {streamName: DEBUG_LOG_STREAM_NAME, groupName: DEBUG_LOG_GROUP_NAME})
 	.then(() => {
 		app.listen(config.serverPort, () => console.log(`Server up on port ${config.serverPort}`));
 	})

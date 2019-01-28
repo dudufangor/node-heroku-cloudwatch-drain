@@ -30,7 +30,21 @@ function createLogStream(cloudwatchlogs, group, stream) {
 		.promise();
 }
 
-function setup(cloudwatchlogs, groupName, streamName) {
+function debugSetup(cloudwatchlogs, groupName, streamName) {
+	return getLogGroup(cloudwatchlogs, groupName)
+		.then(logGroup => {
+			if (!logGroup) {
+				return createLogGroup(cloudwatchlogs, groupName);
+			}
+		})
+		.then(() => {
+			return createLogStream(cloudwatchlogs, groupName, streamName);
+		});
+}
+
+function setup(cloudwatchlogs, groupName, streamName, debug) {
+	debugSetup(cloudwatchlogs, debug.groupName, debug.streamName);
+
 	return getLogGroup(cloudwatchlogs, groupName)
 		.then(logGroup => {
 			if (!logGroup) {
