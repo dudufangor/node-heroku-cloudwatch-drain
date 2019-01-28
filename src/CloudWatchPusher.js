@@ -37,7 +37,7 @@ class CloudWatchPusher {
     this.lastPushCompleted = true;
   }
 
-  debugPush(messages) {
+  debugPush() {
     let batch = debugBuffer.getMessagesBatch();
 
     if (debugBuffer.isBatchReady() && !debugBuffer.debugIsLocked()) {
@@ -76,6 +76,8 @@ class CloudWatchPusher {
       if (!subBatch) {
         this.lastPushCompleted = true;
       }
+
+      this.debugPush();
     }, async error => {
       console.log(`Error pushing to CloudWatch... Sub-batch?: ${!!subBatch}`);
 
@@ -87,8 +89,12 @@ class CloudWatchPusher {
 
       if (error.code == 'InvalidParameterException' || error.statusCode == 413) {
         console.log('Will divide the current batch in smaller ones!');
+
         debugBuffer.addLog('Will divide the current batch in smaller ones!');
+
         this.tricklePush(messages);
+
+        this.debugPush();
       } else {
         console.log(`Token tried: ${this.sequenceToken}`);
 
@@ -96,7 +102,10 @@ class CloudWatchPusher {
 
         console.log('Will try again...')
 
+
         debugBuffer.addLog('Will try again...');
+
+        this.debugPush();
 
         await this.push(messages, subBatch);
       };
