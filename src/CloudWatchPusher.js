@@ -40,15 +40,15 @@ class CloudWatchPusher {
   debugPush() {
     let batch = this.debugBuffer.getMessagesBatch();
 
-    console.log(`this.debugBuffer.isBatchReady() ${this.debugBuffer.isBatchReady()}`);
-    console.log(`this.debugIsLocked() ${this.debugIsLocked()}`);
-    console.log(`batch ${batch.length}`);
+    // console.log(`this.debugBuffer.isBatchReady() ${this.debugBuffer.isBatchReady()}`);
+    // console.log(`this.debugIsLocked() ${this.debugIsLocked()}`);
+    // console.log(`batch ${batch.length}`);
 
     if (this.debugBuffer.isBatchReady() && !this.debugIsLocked()) {
       this.lastDebugPushCompleted = false;
 
       const params = {
-        logEvents: messages.concat([]),
+        logEvents: batch.concat([]),
         logGroupName: this.debugGroup,
         logStreamName: this.debugStream,
         sequenceToken: this.debugSequenceToken
@@ -57,6 +57,7 @@ class CloudWatchPusher {
       return this.cloudWatchInstance.putLogEvents(params).promise().then(data => {
         this.debugSequenceToken = data.nextSequenceToken;
         this.lastDebugPushCompleted = true;
+        this.debugBuffer.clearMessagesBatch();
       }, error => {
         console.log(`Error pushing to CloudWatch... !!!Debug!!!`);
         console.log(error);
