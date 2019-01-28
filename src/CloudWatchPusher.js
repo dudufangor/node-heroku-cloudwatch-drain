@@ -76,10 +76,6 @@ class CloudWatchPusher {
       if (!subBatch) {
         this.lastPushCompleted = true;
       }
-
-      if (buffer.isBatchReady() && !pusher.isLocked()) {
-
-      }
     }, async error => {
       console.log(`Error pushing to CloudWatch... Sub-batch?: ${!!subBatch}`);
 
