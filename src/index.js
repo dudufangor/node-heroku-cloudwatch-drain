@@ -51,7 +51,7 @@ const app = setupWebServer(function(line) {
 	let batch = buffer.getMessagesBatch();
 
 	if ((Date.now() - lastOutput) >= 1000) {
-		console.log(`Messages in queue: ${}`)
+		console.log(`Messages in queue: ${buffer.messages.length}`)
 		console.log(`Queue size: ${buffer.messagesSize()/1000} Kbytes`)
 		lastOutput = Date.now();
 	}
