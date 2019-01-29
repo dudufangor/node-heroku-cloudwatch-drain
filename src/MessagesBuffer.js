@@ -44,7 +44,7 @@ class MessagesBuffer {
   }
 
   isBatchReady() {
-    if (this.messagesSize() >= 900000) {
+    if (this.messagesSize() >= 500) {
       return true;
     }
 
@@ -117,8 +117,6 @@ class MessagesBuffer {
 
   fillInBatch() {
     if (this.shouldFillBatch()) {
-      console.log(`this.maxBatchSize(): ${this.maxBatchSize()}`)
-      console.log(`this.maxBatchSize(): ${this.messages.length}`)
       this.messagesBatch = this.messages.splice(0, this.maxBatchSize());
     };
   }

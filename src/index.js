@@ -50,14 +50,11 @@ const app = setupWebServer(function(line) {
 
 	let batch = buffer.getMessagesBatch();
 
-	if ((Date.now() - lastOutput) >= 1000) {
-		console.log(`Messages in queue: ${buffer.messages.length}`)
-		console.log(`Queue size: ${buffer.messagesSize()/1000} Kbytes`)
-		lastOutput = Date.now();
-	}
-
 	if (buffer.isBatchReady() && !pusher.isLocked()) {
-		debugBuffer.addLog(`${pusher.pushed} pushed to CloudWatch | ${buffer.messages.length} messages enqueued`);
+		if ((Date.now() - lastOutput) >= 1000) {
+			debugBuffer.addLog(`${pusher.pushed} pushed to CloudWatch | ${buffer.messages.length} messages enqueued`);
+			lastOutput = Date.now();
+		}
 
 		pusher.lastPushCompleted = false;
 

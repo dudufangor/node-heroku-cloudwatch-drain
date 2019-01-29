@@ -28,14 +28,15 @@ class CloudWatchPusher {
     return !this.lastDebugPushCompleted;
   }
 
-  async tricklePush (messages, batchSize) {
+  async tricklePush (messages, batchSize, noComplete) {
     do {
       let batch = messages.splice(0, batchSize)
       this.debugBuffer.addLog(`Sub-batch pushing... ${batch.length} messages`);
       await this.push(batch, true);
     } while (messages.length >= 1);
-
-    this.lastPushCompleted = true;
+    if (!noComplete) {
+      this.lastPushCompleted = true;
+    }
   }
 
   debugPush() {
@@ -95,8 +96,12 @@ class CloudWatchPusher {
 
         this.debugBuffer.addLog('Will divide the current batch in smaller ones!');
         this.debugBuffer.addLog(`Longest record: [${longest.message}]`);
+        if (subBatch) {
+          this.tricklePush(messages, 1, true);
+        } else {
+          this.tricklePush(messages, 50);
+        };
 
-        this.tricklePush(messages, 50);
 
         this.debugPush();
       } else {
