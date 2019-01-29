@@ -20,6 +20,7 @@ class MessagesBuffer {
     this.filters = filters || [];
     this.batchSize = batchSize;
     this.messagesBatch = [];
+    this.maxedBytesSize = false;
     this.debug = debug;
   }
 
@@ -41,9 +42,14 @@ class MessagesBuffer {
 
   clearMessagesBatch() {
     this.messagesBatch = [];
+    this.maxedBytesSize = false;
   }
 
   isBatchReady() {
+    if (this.maxedBytesSize) {
+      return true;
+    }
+
     if (this.messagesBatch.length >= this.batchSize) {
       return true;
     }
@@ -93,6 +99,9 @@ class MessagesBuffer {
         batchCount += 1;
       };
     };
+
+
+    this.maxedBytesSize = true;
 
     return batchCount;
   };
