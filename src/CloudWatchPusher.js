@@ -89,7 +89,7 @@ class CloudWatchPusher {
       this.debugBuffer.addLog(JSON.stringify(error));
 
       if (error.code == 'InvalidParameterException' || error.statusCode == 413) {
-        let longest = arr.reduce((a, b) => {
+        let longest = messages.reduce((a, b) => {
           return a.message.length > b.message.length ? a : b;
         });
 
