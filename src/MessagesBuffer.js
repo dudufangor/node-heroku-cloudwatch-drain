@@ -80,7 +80,7 @@ class MessagesBuffer {
     message.message.length
   }
 
-  maxBatchSize(messages) {
+  maxBatchSize() {
     var batchCount = 1;
     var sizeEstimate = 0;
 
@@ -99,7 +99,7 @@ class MessagesBuffer {
 
   fillInBatch() {
     if (this.shouldFillBatch()) {
-      this.messagesBatch = this.messages.splice(0, this.maxBatchSize(messages));
+      this.messagesBatch = this.messages.splice(0, this.maxBatchSize());
     };
   }
 
