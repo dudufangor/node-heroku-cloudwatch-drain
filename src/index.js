@@ -43,8 +43,6 @@ const buffer = new MessagesBuffer(config.filters, config.batchSize);
 const pusher = new CloudWatchPusher(cloudWatchLogsInstance, config.logGroup, LOG_STREAM, {streamName: DEBUG_LOG_STREAM_NAME, groupName: DEBUG_LOG_GROUP_NAME, buffer: debugBuffer});
 
 let lastPushedTime = 0;
-let lastPushedMessages = 0;
-let pushedMessages = 0;
 let lastOutput = 0;
 
 const app = setupWebServer(function(line) {
@@ -54,18 +52,12 @@ const app = setupWebServer(function(line) {
 
 	if (buffer.isBatchReady() && !pusher.isLocked()) {
 		if ((Date.now() - lastOutput) >= 1000) {
-			console.log(`${pushedMessages} pushed to CloudWatch | ${buffer.messages.length} messages enqueued`);
-			console.log(`Throughtput is ${pushedMessages-lastPushedMessages} messages per second.`);
-
-			debugBuffer.addLog(`${pushedMessages} pushed to CloudWatch | ${buffer.messages.length} messages enqueued`);
-			debugBuffer.addLog(`Throughtput is ${pushedMessages-lastPushedMessages} messages per second.`);
-
-			lastPushedMessages = pushedMessages;
-
+			debugBuffer.addLog(`${pusher.pushed} pushed to CloudWatch | ${buffer.messages.length} messages enqueued`);
 			lastOutput = Date.now();
 		}
 
 		pusher.lastPushCompleted = false;
+
 		pusher.push(batch);
 
 		pushedMessages += buffer.messagesBatch.length

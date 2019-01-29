@@ -6,6 +6,8 @@ class CloudWatchPusher {
   constructor(cloudWatchInstance, group, stream, debug) {
     this.cloudWatchInstance = cloudWatchInstance;
 
+    this.pushed = 0;
+
     this.group = group;
     this.stream = stream;
     this.sequenceToken = null;
@@ -77,6 +79,8 @@ class CloudWatchPusher {
       if (!subBatch) {
         this.lastPushCompleted = true;
       }
+
+      this.pushed += messages.length;
 
       this.debugPush();
     }, async error => {
