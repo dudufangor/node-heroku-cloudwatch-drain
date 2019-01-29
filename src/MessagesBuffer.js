@@ -86,6 +86,16 @@ class MessagesBuffer {
     message.message.length
   }
 
+  messagesSize() {
+    var sizeEstimate = 0;
+
+    for (let message of this.messages) {
+      sizeEstimate += 26 + this.getMessageSize(message);
+    };
+
+    return sizeEstimate;
+  }
+
   maxBatchSize() {
     var batchCount = 1;
     var sizeEstimate = 0;
