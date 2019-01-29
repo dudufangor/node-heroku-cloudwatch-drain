@@ -87,7 +87,7 @@ class MessagesBuffer {
   messagesSize() {
     var sizeEstimate = 0;
 
-    for (let message of this.messages) {
+    for (let message of this.messagesBatch) {
       sizeEstimate += 26 + this.getMessageSize(message);
     };
 
