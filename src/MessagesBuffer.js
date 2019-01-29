@@ -83,7 +83,7 @@ class MessagesBuffer {
   }
 
   getMessageSize(message) {
-    message.message.length
+    return message.message.length;
   }
 
   messagesSize() {
