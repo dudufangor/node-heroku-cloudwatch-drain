@@ -76,9 +76,30 @@ class MessagesBuffer {
     return this.messagesBatch;
   }
 
+  getMessageSize(message) {
+    message.message.length
+  }
+
+  maxBatchSize(messages) {
+    var batchCount = 1;
+    var sizeEstimate = 0;
+
+    for (let message of messages) {
+      sizeEstimate += 26 + this.getMessageSize(message);
+
+      if (sizeEstimate > 1048576 || batchCount >= this.batchSize) {
+        break;
+      } else {
+        batchCount += 1;
+      };
+    };
+
+    return batchCount;
+  };
+
   fillInBatch() {
     if (this.shouldFillBatch()) {
-      this.messagesBatch = this.messages.splice(0, this.batchSize);
+      this.messagesBatch = this.messages.splice(0, maxBatchSize(messages));
     };
   }
 
