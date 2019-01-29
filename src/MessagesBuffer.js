@@ -15,11 +15,12 @@ function isValid(log, filters) {
 }
 
 class MessagesBuffer {
-  constructor(filters, batchSize) {
+  constructor(filters, batchSize, debug) {
     this.messages = [];
     this.filters = filters || [];
     this.batchSize = batchSize;
     this.messagesBatch = [];
+    this.debug = debug;
   }
 
   queueAge() {
@@ -83,6 +84,9 @@ class MessagesBuffer {
 
   addLog(log) {
     if (isValid(log, this.filters)) {
+      if (this.debug) {
+        console.log(log);
+      };
       this.messages.push({
         timestamp: Date.now(),
         message: log.trim(),

@@ -26,10 +26,9 @@ class CloudWatchPusher {
     return !this.lastDebugPushCompleted;
   }
 
-  async tricklePush (messages) {
+  async tricklePush (messages, batchSize) {
     do {
-      let batch = messages.splice(0, 50)
-      console.log(`Sub-batch pushing... ${batch.length} messages`)
+      let batch = messages.splice(0, batchSize)
       this.debugBuffer.addLog(`Sub-batch pushing... ${batch.length} messages`);
       await this.push(batch, true);
     } while (messages.length >= 1);
@@ -40,9 +39,6 @@ class CloudWatchPusher {
   debugPush() {
     let batch = this.debugBuffer.getMessagesBatch();
 
-    // console.log(`this.debugBuffer.isBatchReady() ${this.debugBuffer.isBatchReady()}`);
-    // console.log(`this.debugIsLocked() ${this.debugIsLocked()}`);
-    // console.log(`batch ${batch.length}`);
 
     if (this.debugBuffer.isBatchReady() && !this.debugIsLocked()) {
       this.lastDebugPushCompleted = false;
@@ -84,30 +80,24 @@ class CloudWatchPusher {
 
       this.debugPush();
     }, async error => {
-      console.log(`Error pushing to CloudWatch... Sub-batch?: ${!!subBatch}`);
 
       this.debugBuffer.addLog(`Error pushing to CloudWatch... Sub-batch?: ${!!subBatch}`);
-
-      console.log(error);
-
       this.debugBuffer.addLog(JSON.stringify(error));
 
       if (error.code == 'InvalidParameterException' || error.statusCode == 413) {
-        console.log('Will divide the current batch in smaller ones!');
+        let longest = arr.reduce((a, b) => {
+          return a.message.length > b.message.length ? a : b;
+        });
 
         this.debugBuffer.addLog('Will divide the current batch in smaller ones!');
+        this.debugBuffer.addLog(`Longest record: ${longest}`);
 
-        this.tricklePush(messages);
+        this.tricklePush(messages, 50);
 
         this.debugPush();
       } else {
-        console.log(`Token tried: ${this.sequenceToken}`);
 
         this.debugBuffer.addLog(`Token tried: ${this.sequenceToken}`);
-
-        console.log('Will try again...')
-
-
         this.debugBuffer.addLog('Will try again...');
 
         this.debugPush();

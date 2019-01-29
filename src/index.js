@@ -38,7 +38,7 @@ const MessagesBuffer = require("./MessagesBuffer");
 const CloudWatchPusher = require("./CloudWatchPusher");
 const parseMetrics = require("./parseMetrics");
 
-const debugBuffer = new MessagesBuffer([], 10);
+const debugBuffer = new MessagesBuffer([], 10, true);
 const buffer = new MessagesBuffer(config.filters, config.batchSize);
 const pusher = new CloudWatchPusher(cloudWatchLogsInstance, config.logGroup, LOG_STREAM, {streamName: DEBUG_LOG_STREAM_NAME, groupName: DEBUG_LOG_GROUP_NAME, buffer: debugBuffer});
 
