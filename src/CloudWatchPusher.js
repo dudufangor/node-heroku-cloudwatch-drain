@@ -94,7 +94,7 @@ class CloudWatchPusher {
         });
 
         this.debugBuffer.addLog('Will divide the current batch in smaller ones!');
-        this.debugBuffer.addLog(`Longest record: ${longest}`);
+        this.debugBuffer.addLog(`Longest record: [${longest.message}]`);
 
         this.tricklePush(messages, 50);
 
