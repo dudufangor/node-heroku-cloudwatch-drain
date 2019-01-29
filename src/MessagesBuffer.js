@@ -84,7 +84,7 @@ class MessagesBuffer {
     var batchCount = 1;
     var sizeEstimate = 0;
 
-    for (let message of messages) {
+    for (let message of this.messages) {
       sizeEstimate += 26 + this.getMessageSize(message);
 
       if (sizeEstimate > 1048576 || batchCount >= this.batchSize) {
