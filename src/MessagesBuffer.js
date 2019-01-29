@@ -46,7 +46,7 @@ class MessagesBuffer {
   }
 
   isBatchReady() {
-    if (this.maxedBytesSize) {
+    if (this.messagesSize() >= 900000) {
       return true;
     }
 
@@ -108,7 +108,6 @@ class MessagesBuffer {
       }
 
       if (sizeEstimate >= 900000) {
-        this.maxedBytesSize = true;
         break;
       };
 
