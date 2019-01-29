@@ -99,7 +99,7 @@ class MessagesBuffer {
 
   fillInBatch() {
     if (this.shouldFillBatch()) {
-      this.messagesBatch = this.messages.splice(0, maxBatchSize(messages));
+      this.messagesBatch = this.messages.splice(0, this.maxBatchSize(messages));
     };
   }
 
