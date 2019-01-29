@@ -103,15 +103,17 @@ class MessagesBuffer {
     for (let message of this.messages) {
       sizeEstimate += 26 + this.getMessageSize(message);
 
-      if (sizeEstimate >= 900000 || batchCount >= this.batchSize) {
+      if (batchCount >= this.batchSize) {
         break;
-      } else {
-        batchCount += 1;
+      }
+
+      if (sizeEstimate >= 900000) {
+        this.maxedBytesSize = true;
+        break;
       };
+
+      batchCount += 1;
     };
-
-
-    this.maxedBytesSize = true;
 
     return batchCount;
   };
