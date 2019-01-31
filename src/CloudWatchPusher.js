@@ -64,7 +64,7 @@ class CloudWatchPusher {
     }
   }
 
-  async push(messages, subBatch) {
+  push(messages, subBatch) {
     this.lastPushCompleted = false;
 
     const params = {
@@ -84,7 +84,7 @@ class CloudWatchPusher {
       this.pushed += messages.length;
 
       this.debugPush();
-    }, async error => {
+    }, error => {
 
       this.debugBuffer.addLog(`Error pushing to CloudWatch... Sub-batch?: ${!!subBatch}`);
       this.debugBuffer.addLog(JSON.stringify(error));
@@ -111,7 +111,7 @@ class CloudWatchPusher {
 
         this.debugPush();
 
-        await this.push(messages, subBatch);
+        this.push(messages, subBatch);
       };
     });
   }
