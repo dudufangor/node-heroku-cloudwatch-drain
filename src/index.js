@@ -58,7 +58,9 @@ const app = setupWebServer(function(line) {
 
 		pusher.lastPushCompleted = false;
 
-		pusher.push(batch, buffer.clearMessagesBatch);
+		pusher.push(batch);
+
+		buffer.clearMessagesBatch();
 
 		lastPushedTime = Date.now();
 	}

@@ -75,8 +75,6 @@ class CloudWatchPusher {
     };
 
     return this.cloudWatchInstance.putLogEvents(params).promise().then(data => {
-      callback();
-
       this.sequenceToken = data.nextSequenceToken;
       this.pushed += messages.length;
 
