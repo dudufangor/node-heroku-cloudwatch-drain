@@ -28,16 +28,16 @@ class CloudWatchPusher {
     return !this.lastDebugPushCompleted;
   }
 
-  async tricklePush (messages, batchSize, noComplete) {
-    do {
-      let batch = messages.splice(0, batchSize)
-      this.debugBuffer.addLog(`Sub-batch pushing... ${batch.length} messages`);
-      await this.push(batch, true);
-    } while (messages.length >= 1);
-    if (!noComplete) {
-      this.lastPushCompleted = true;
-    }
-  }
+  // async tricklePush (messages, batchSize, noComplete) {
+  //   do {
+  //     let batch = messages.splice(0, batchSize)
+  //     this.debugBuffer.addLog(`Sub-batch pushing... ${batch.length} messages`);
+  //     await this.push(batch, true);
+  //   } while (messages.length >= 1);
+  //   if (!noComplete) {
+  //     this.lastPushCompleted = true;
+  //   }
+  // }
 
   debugPush() {
     let batch = this.debugBuffer.getMessagesBatch();
@@ -64,7 +64,7 @@ class CloudWatchPusher {
     }
   }
 
-  push(messages, subBatch) {
+  push(messages, callback) {
     this.lastPushCompleted = false;
 
     const params = {
@@ -75,43 +75,34 @@ class CloudWatchPusher {
     };
 
     return this.cloudWatchInstance.putLogEvents(params).promise().then(data => {
+      callback();
+
       this.sequenceToken = data.nextSequenceToken;
-
-      if (!subBatch) {
-        this.lastPushCompleted = true;
-      }
-
       this.pushed += messages.length;
 
       this.debugPush();
+
+      this.lastPushCompleted = true;
     }, error => {
 
-      this.debugBuffer.addLog(`Error pushing to CloudWatch... Sub-batch?: ${!!subBatch}`);
+      this.debugBuffer.addLog(`Error pushing to CloudWatch...`);
       this.debugBuffer.addLog(JSON.stringify(error));
 
-      if (error.code == 'InvalidParameterException' || error.statusCode == 413) {
-        let longest = messages.reduce((a, b) => {
-          return a.message.length > b.message.length ? a : b;
-        });
+      if (error.code == 'DataAlreadyAcceptedException') {
+        this.debugBuffer.addLog(`Batch already pushed, skipping...`);
 
-        this.debugBuffer.addLog('Will divide the current batch in smaller ones!');
-        this.debugBuffer.addLog(`Longest record: [${longest.message}]`);
-        if (subBatch) {
-          this.tricklePush(messages, 1, true);
-        } else {
-          this.tricklePush(messages, 50);
-        };
+        callback();
 
+        this.lastPushCompleted = true;
 
         this.debugPush();
       } else {
-
         this.debugBuffer.addLog(`Token tried: ${this.sequenceToken}`);
         this.debugBuffer.addLog('Will try again...');
 
         this.debugPush();
 
-        this.push(messages, subBatch);
+        this.push(messages);
       };
     });
   }

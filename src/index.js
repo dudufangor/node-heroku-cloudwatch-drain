@@ -52,15 +52,13 @@ const app = setupWebServer(function(line) {
 
 	if (buffer.isBatchReady() && !pusher.isLocked()) {
 		if ((Date.now() - lastOutput) >= 1000) {
-			debugBuffer.addLog(`${pusher.pushed} pushed to CloudWatch | ${buffer.messages.length} messages enqueued`);
+			debugBuffer.addLog(`${pusher.pushed.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} pushed to CloudWatch | ${buffer.messages.length.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} messages enqueued`);
 			lastOutput = Date.now();
 		}
 
 		pusher.lastPushCompleted = false;
 
-		pusher.push(batch);
-
-		buffer.clearMessagesBatch();
+		pusher.push(batch, buffer.clearMessagesBatch);
 
 		lastPushedTime = Date.now();
 	}
