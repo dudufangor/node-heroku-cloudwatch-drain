@@ -6,7 +6,7 @@ function isValid(log, filters, lastOutput) {
   }
 
   for (let filter of filters) {
-    if (filters.test(log)) {
+    if (filter.test(log)) {
       let rOb = { res: false };
 
       if ((Date.now() - lastOutput) >= 1000) {
