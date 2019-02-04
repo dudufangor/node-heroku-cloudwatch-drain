@@ -1,17 +1,25 @@
 require('log-timestamp');
 
-function isValid(log, filters) {
+function isValid(log, filters, lastOutput) {
   if (!log || !log.trim()) {
-    return false;
+    return { res: false, lou:  lastOutput };
   }
 
-  for (let i = 0; i < filters.length; i++) {
-    if (filters[i].test(log)) {
-      return false;
+  for (let filter of filters) {
+    if (filters.test(log)) {
+      let rOb = { res: false };
+
+      if ((Date.now() - lastOutput) >= 1000) {
+        rOb.lou = Date.now()
+        console.log('Invalid record.');
+        console.log(log);
+      }
+
+      return rOb;
     }
   }
 
-  return true;
+  return { res: true, lou:  lastOutput };
 }
 
 class MessagesBuffer {
@@ -21,6 +29,7 @@ class MessagesBuffer {
     this.batchSize = batchSize;
     this.messagesBatch = [];
     this.debug = debug;
+    this.lastOutput = 0;
   }
 
   queueAge() {
@@ -122,10 +131,15 @@ class MessagesBuffer {
   }
 
   addLog(log) {
-    if (isValid(log, this.filters)) {
+    let validEntry = isValid(log, this.filters, this.lastOutput)
+
+    this.lastOutput = validEntry.lou;
+
+    if (validEntry.res) {
       if (this.debug) {
         console.log(log);
       };
+
       this.messages.push({
         timestamp: Date.now(),
         message: log.trim(),
