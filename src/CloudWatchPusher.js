@@ -18,6 +18,7 @@ class CloudWatchPusher {
     this.debugStream = debug.streamName;
     this.lastDebugPushCompleted = true;
     this.debugSequenceToken = null;
+    this.lastRecordPushed = null;
   }
 
   isLocked() {
@@ -77,7 +78,7 @@ class CloudWatchPusher {
     return this.cloudWatchInstance.putLogEvents(params).promise().then(data => {
       this.sequenceToken = data.nextSequenceToken;
       this.pushed += messages.length;
-
+      this.lastRecordPushed = messages.slice(-1)[0];
       this.debugPush();
 
       this.lastPushCompleted = true;
@@ -87,7 +88,14 @@ class CloudWatchPusher {
       this.debugBuffer.addLog(JSON.stringify(error));
 
       if (error.code == 'DataAlreadyAcceptedException') {
+        console.log('-\n\n-');
+
         this.debugBuffer.addLog(`Batch already pushed, skipping...`);
+        this.debugBuffer.addLog(`Last record on previous batch: ${JSON.stringify(this.lastRecordPushed)}`)
+        this.debugBuffer.addLog('-\n-')
+        this.debugBuffer.addLog(`Last record on this failed batch: ${JSON.stringify(messages.slice(-1)[0])}`)
+
+        this.debugBuffer.addLog('\n\n');
 
         callback();
 

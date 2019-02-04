@@ -15,8 +15,9 @@ function isValid(log, filters, lastOutput) {
 
       if ( (Date.now() - lastOutput) >= 1000 ) {
         responseObject.lou = Date.now();
-
-        console.log(`Invalid record with filter ${filter} \n${log}`);
+        if (this.debug) {
+          console.log(`Invalid record with filter ${filter} \n${log}`);
+        }
       }
 
       return responseObject;
