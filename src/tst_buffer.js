@@ -1,42 +1,33 @@
-// require('log-timestamp');
-//
-// const MessagesBuffer = require("./MessagesBuffer");
-// const CloudWatchPusher = require("./CloudWatchPusher");
-//
-//
-// var testBuffer = async () => {
-//   let pms = 0;
-//   function sleep(ms) {
-//     return new Promise(resolve => setTimeout(resolve, ms));
-//   }
-//
-//   function maxRuntime(start) {
-//     return (((new Date().getTime()) - start) >= 1000)
-//   }
-//
-//   let start = new Date().getTime();
-//   let buffer = new MessagesBuffer([], 113);
-//   const pusher = new CloudWatchPusher('penis', 'fff', 'vruum');
-//
-//   var i;
-//   for (i = 0; i <= 1000; i++) {
-//     buffer.addLog(`logline n ${i}`);
-//   }
-//
-//   console.log('\nLOGS ADDED!\n')
-//
-//   do {
-//     let batch = buffer.getMessagesBatch();
-//
-//     if (buffer.isBatchReady() && !pusher.isLocked()) {
-//       // await sleep(200)
-//       await pusher.push(batch);
-//       buffer.clearMessagesBatch();
-//     }
-//   } while (buffer.getMessagesCount() > 1);
-// }
-//
-// testBuffer();
-//
-// // cat forever.log | grep -m 2 -C 30 'Error pushing to CloudWatch'
-console.log(1048576 > 1000000);
+require('log-timestamp');
+
+const MessagesBuffer = require("./MessagesBuffer");
+const CloudWatchPusher = require("./CloudWatchPusher");
+
+
+var testBuffer = async () => {
+  function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  let buffer = new MessagesBuffer([/\[\dm.{1}\[\d{2}m/, /INFO:\s(done|start)/, /<.+\/>/, /\w+:\s.+;/], 113);
+
+  var i;
+  for (i = 0; i <= 50; i++) {
+    buffer.addLog(`bla, bla, bla INFO: done`);
+    await sleep(200);
+  }
+
+  // do {
+  //   let batch = buffer.getMessagesBatch();
+  //
+  //   if (buffer.isBatchReady() && !pusher.isLocked()) {
+  //     // await sleep(200)
+  //     await pusher.push(batch);
+  //     buffer.clearMessagesBatch();
+  //   }
+  // } while (buffer.getMessagesCount() > 1);
+}
+
+testBuffer();
+
+// cat forever.log | grep -m 2 -C 30 'Error pushing to CloudWatch'

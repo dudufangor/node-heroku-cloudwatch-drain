@@ -1,25 +1,31 @@
 require('log-timestamp');
 
 function isValid(log, filters, lastOutput) {
+  let responseObject = { res: null, lou: lastOutput };
+
   if (!log || !log.trim()) {
-    return { res: false, lou:  lastOutput };
+    responseObject.res = false
+
+    return responseObject;
   }
 
   for (let filter of filters) {
     if (filter.test(log)) {
-      let rOb = { res: false };
+      responseObject.res = false;
 
-      if ((Date.now() - lastOutput) >= 1000) {
-        rOb.lou = Date.now()
-        console.log('Invalid record.');
-        console.log(log);
+      if ( (Date.now() - lastOutput) >= 1000 ) {
+        responseObject.lou = Date.now();
+
+        console.log(`Invalid record with filter ${filter} \n${log}`);
       }
 
-      return rOb;
+      return responseObject;
     }
   }
 
-  return { res: true, lou:  lastOutput };
+  responseObject.res = true;
+
+  return responseObject;
 }
 
 class MessagesBuffer {
