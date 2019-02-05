@@ -1,6 +1,7 @@
 "use strict";
 
 require('log-timestamp');
+const fs = require('fs');
 
 class CloudWatchPusher {
   constructor(cloudWatchInstance, group, stream, debug) {
@@ -18,7 +19,9 @@ class CloudWatchPusher {
     this.debugStream = debug.streamName;
     this.lastDebugPushCompleted = true;
     this.debugSequenceToken = null;
-    this.lastRecordPushed = null;
+
+    this.lastBatchPushed = null;
+    this.lastSequenceTokenUsed = null;
   }
 
   isLocked() {
@@ -65,6 +68,10 @@ class CloudWatchPusher {
     }
   }
 
+  writeToFile(line) {
+    fs.appendFileSync('/home/ubuntu/failed_batches.log', line);
+  };
+
   push(messages, callback) {
     this.lastPushCompleted = false;
 
@@ -76,9 +83,12 @@ class CloudWatchPusher {
     };
 
     return this.cloudWatchInstance.putLogEvents(params).promise().then(data => {
+      this.lastBatchPushed = messages;
+      this.lastSequenceTokenUsed = this.sequenceToken;
+
       this.sequenceToken = data.nextSequenceToken;
       this.pushed += messages.length;
-      this.lastRecordPushed = messages.slice(-1)[0];
+
       this.debugPush();
 
       this.lastPushCompleted = true;
@@ -88,16 +98,28 @@ class CloudWatchPusher {
       this.debugBuffer.addLog(JSON.stringify(error));
 
       if (error.code == 'DataAlreadyAcceptedException') {
-        console.log('-\n\n-');
-
         this.debugBuffer.addLog(`Batch already pushed, skipping...`);
-        this.debugBuffer.addLog(`Last record on previous batch: ${JSON.stringify(this.lastRecordPushed)}`)
-        this.debugBuffer.addLog('-\n-')
-        this.debugBuffer.addLog(`Last record on this failed batch: ${JSON.stringify(messages.slice(-1)[0])}`)
 
-        this.debugBuffer.addLog('\n\n');
+        writeToFile('\n\n\n\n\n\n\n\n');
+        writeToFile('### Batch already accepted by CloudWatch ###');
+        writeToFile(`With sequence token ${this.sequenceToken} the following batch was denied:`);
+        writeToFile('\n\n');
 
-        callback();
+        for (let message of messages) {
+          writeToFile(message.message)
+        };
+
+        writeToFile('\n-----------------------------------------------------------------------------\n');
+
+        writeToFile(`The previous batch was sent with sequence token ${this.lastSequenceTokenUsed}, the previous batch was:`);
+
+        for (let message of this.lastBatchPushed) {
+          writeToFile(message.message)
+        };
+
+        if (callback) {
+          callback();
+        };
 
         this.lastPushCompleted = true;
 
