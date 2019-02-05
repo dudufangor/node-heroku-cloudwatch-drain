@@ -100,21 +100,21 @@ class CloudWatchPusher {
       if (error.code == 'DataAlreadyAcceptedException') {
         this.debugBuffer.addLog(`Batch already pushed, skipping...`);
 
-        writeToFile('\n\n\n\n\n\n\n\n');
-        writeToFile('### Batch already accepted by CloudWatch ###');
-        writeToFile(`With sequence token ${this.sequenceToken} the following batch was denied:`);
-        writeToFile('\n\n');
+        this.writeToFile('\n\n\n\n\n\n\n\n');
+        this.writeToFile('### Batch already accepted by CloudWatch ###');
+        this.writeToFile(`With sequence token ${this.sequenceToken} the following batch was denied:`);
+        this.writeToFile('\n\n');
 
         for (let message of messages) {
-          writeToFile(message.message)
+          this.writeToFile(message.message)
         };
 
-        writeToFile('\n-----------------------------------------------------------------------------\n');
+        this.writeToFile('\n-----------------------------------------------------------------------------\n');
 
-        writeToFile(`The previous batch was sent with sequence token ${this.lastSequenceTokenUsed}, the previous batch was:`);
+        this.writeToFile(`The previous batch was sent with sequence token ${this.lastSequenceTokenUsed}, the previous batch was:`);
 
         for (let message of this.lastBatchPushed) {
-          writeToFile(message.message)
+          this.writeToFile(message.message)
         };
 
         if (callback) {
