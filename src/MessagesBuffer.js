@@ -150,7 +150,7 @@ class MessagesBuffer {
 
         this.messages.push({
           timestamp: Date.now(),
-          message: log_payload
+          message: JSON.stringify(log_payload)
         });
       } else {
         this.messages.push({
