@@ -6,6 +6,8 @@ const fileFromArgument = process.argv[2];
 
 require('log-timestamp');
 
+const NumberHelpers = require("number_helpers");
+
 if (!fileFromArgument) {
 	console.error(
 		"Please specify config file: \n Example: $ node-heroku-cloudwatch-drain config.js"
@@ -45,20 +47,28 @@ const pusher = new CloudWatchPusher(cloudWatchLogsInstance, config.logGroup, LOG
 let lastPushedTime = 0;
 let lastOutput = 0;
 
+
+const prettyNumber = (number) => {
+	return NumberHelpers.number_to_human(number, {precision: 4});
+};
+
+const logProgress = () => {
+	if ((Date.now() - lastOutput) >= 1000) {
+		debugBuffer.addLog(
+			`Pushed: ${prettyNumber(pusher.pushed)}, Enqueued: ${prettyNumber(buffer.messages.length)}`,
+			{ total_pushed: pusher.pushed, enqueued: buffer.messages.length }
+		);
+
+		lastOutput = Date.now();
+	}
+};
+
 const app = setupWebServer(function(line) {
 	buffer.addLog(line);
 
 	let batch = buffer.getMessagesBatch();
 
 	if (buffer.isBatchReady() && !pusher.isLocked()) {
-		if ((Date.now() - lastOutput) >= 1000) {
-			debugBuffer.addLog(`${pusher.pushed.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} pushed to CloudWatch | ${buffer.messages.length.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} messages enqueued`, {
-				total_pushed: pusher.pushed,
-				enqueued: buffer.messages.length
-			});
-			lastOutput = Date.now();
-		}
-
 		pusher.lastPushCompleted = false;
 
 		pusher.push(batch);
