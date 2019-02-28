@@ -137,7 +137,7 @@ class MessagesBuffer {
     };
   }
 
-  addLog(log) {
+  addLog(log, obj_data) {
     let validEntry = isValid(log, this.filters, this.lastOutput)
 
     this.lastOutput = validEntry.lou;
@@ -145,12 +145,19 @@ class MessagesBuffer {
     if (validEntry.res) {
       if (this.debug) {
         console.log(log);
-      };
 
-      this.messages.push({
-        timestamp: Date.now(),
-        message: log.trim(),
-      });
+        log_payload = Object.assign({ message: log.trim() }, obj_data)
+
+        this.messages.push({
+          timestamp: Date.now(),
+          message: log_payload
+        });
+      } else {
+        this.messages.push({
+          timestamp: Date.now(),
+          message: log.trim(),
+        });
+      };
     }
   }
 }

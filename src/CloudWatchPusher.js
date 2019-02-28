@@ -61,6 +61,61 @@ class CloudWatchPusher {
     fs.appendFileSync('/home/ubuntu/failed_batches.log', line);
   };
 
+  handleDataAlreadyAcceptedExceptionError(messages) {
+    this.writeToFile('\n\n\n\n\n\n\n\n');
+    this.writeToFile('### Batch already accepted by CloudWatch ###');
+    this.writeToFile(`With sequence token ${this.sequenceToken} the following batch was denied:`);
+    this.writeToFile('\n\n');
+
+    for (let message of messages) {
+      this.writeToFile(message.message)
+    };
+
+    this.writeToFile('\n-----------------------------------------------------------------------------\n');
+
+    this.writeToFile(`The previous batch was sent with sequence token ${this.lastSequenceTokenUsed}, the previous batch was:`);
+
+    for (let message of this.lastBatchPushed) {
+      this.writeToFile(message.message)
+    };
+
+    this.lastPushCompleted = true;
+
+    this.debugPush();
+  };
+
+  handeInvalidSequenceTokenExceptionError(error, messages) {
+    prioritySequenceToken = error.message.match(/(?:sequenceToken\sis:\s)(.+$)/)[1];
+    this.debugPush();
+    this.push(messages, prioritySequenceToken);
+  };
+
+  handleDefaultErrors(messages) {
+    this.debugPush();
+    this.push(messages);
+  };
+
+  handleErrors(error, messages) {
+    this.debugBuffer.addLog(`Error pushing to CloudWatch...`, {
+      error: 1,
+      error_message: this.debugBuffer.addLog(JSON.stringify(error)),
+      sequenceToken: this.sequenceToken
+    });
+
+    switch(error.code) {
+      case 'DataAlreadyAcceptedException':
+        this.handleDataAlreadyAcceptedExceptionError(messages);
+
+        break;
+      case 'InvalidSequenceTokenException':
+        handeInvalidSequenceTokenExceptionError(error, messages)
+
+        break;
+      default:
+        handleDefaultErrors(messages);
+    }
+  };
+
   push(messages, prioritySequenceToken) {
     this.lastPushCompleted = false;
 
@@ -82,54 +137,7 @@ class CloudWatchPusher {
 
       this.lastPushCompleted = true;
     }, error => {
-
-      this.debugBuffer.addLog(`Error pushing to CloudWatch...`);
-      this.debugBuffer.addLog(JSON.stringify(error));
-
-      switch(error.code) {
-        case 'DataAlreadyAcceptedException':
-          this.debugBuffer.addLog(`Batch already pushed, skipping...`);
-
-          this.writeToFile('\n\n\n\n\n\n\n\n');
-          this.writeToFile('### Batch already accepted by CloudWatch ###');
-          this.writeToFile(`With sequence token ${this.sequenceToken} the following batch was denied:`);
-          this.writeToFile('\n\n');
-
-          for (let message of messages) {
-            this.writeToFile(message.message)
-          };
-
-          this.writeToFile('\n-----------------------------------------------------------------------------\n');
-
-          this.writeToFile(`The previous batch was sent with sequence token ${this.lastSequenceTokenUsed}, the previous batch was:`);
-
-          for (let message of this.lastBatchPushed) {
-            this.writeToFile(message.message)
-          };
-
-          this.lastPushCompleted = true;
-
-          this.debugPush();
-
-          break;
-        case 'InvalidSequenceTokenException':
-          prioritySequenceToken = error.message.match(/(?:sequenceToken\sis:\s)(.+$)/)[1];
-
-          this.debugBuffer.addLog(`Will try again with token: ${prioritySequenceToken}`);
-
-          this.debugPush();
-
-          this.push(messages, prioritySequenceToken);
-
-          break;
-        default:
-          this.debugBuffer.addLog(`Token tried: ${this.sequenceToken}`);
-          this.debugBuffer.addLog('Will try again...');
-
-          this.debugPush();
-
-          this.push(messages);
-      }
+      handleErrors(error, messages);
     });
   }
 }
