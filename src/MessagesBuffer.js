@@ -146,7 +146,7 @@ class MessagesBuffer {
       if (this.debug) {
         console.log(log);
 
-        log_payload = Object.assign({ message: log.trim() }, obj_data)
+        var log_payload = Object.assign({ message: log.trim() }, obj_data)
 
         this.messages.push({
           timestamp: Date.now(),
