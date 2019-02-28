@@ -68,6 +68,8 @@ const app = setupWebServer(function(line) {
 
 	let batch = buffer.getMessagesBatch();
 
+	logProgress();
+
 	if (buffer.isBatchReady() && !pusher.isLocked()) {
 		pusher.lastPushCompleted = false;
 
